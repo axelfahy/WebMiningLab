@@ -9,6 +9,6 @@ import java.io.Serializable;
  */
 public abstract class Index implements Serializable {
 
-	private static final long serialVersionUID = -7032327683456713025L;
+    private static final long serialVersionUID = -7032327683456713025L;
 
 }
