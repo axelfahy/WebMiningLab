@@ -4,6 +4,7 @@
 # Project specific files
 # Temp folder
 temp/
+save/
 
 # User-specific stuff:
 .idea/**/workspace.xml
