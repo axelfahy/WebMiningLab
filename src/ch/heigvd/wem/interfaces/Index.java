@@ -15,7 +15,7 @@ public abstract class Index implements Serializable {
 
     private static final long serialVersionUID = -7032327683456713025L;
 
-    public Map<String, Map<Long, Integer>> index;
+    public Map<Long, Map<String, Long>> index;
     public Map<String, Map<Long, Integer>> invertedIndex;
 
     // Same for ponderations ?

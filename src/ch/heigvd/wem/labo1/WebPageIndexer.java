@@ -11,16 +11,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.counting;
+
 
 /**
  *
  */
 public class WebPageIndexer implements Indexer {
 
-    private Index index;
+    private WebPageSaver index;
     // Path to stop words files
     private static final String PATH_STOP_WORD_EN = "common_words";
-    private static final String PATH_STOP_WORD_FR = "common_words";
+    private static final String PATH_STOP_WORD_FR = "common_words_fr";
 
     public WebPageIndexer() {
         this.index = new WebPageSaver();
@@ -28,7 +30,8 @@ public class WebPageIndexer implements Indexer {
 
     @Override
     public void index(Metadata metadata, String content) {
-        List<String> tokens = Arrays.asList(content.split(" ")); // TODO: check for apostrophe: can't => "can't" vs parents' => "parents"
+        // Tokenization on space and punctuation except apostrophes
+        List<String> tokens = Arrays.asList(content.split("\\W+"));
 
         // Load common words from both language (french and english)
         Set<String> stopEn = loadStopWordToSet(PATH_STOP_WORD_EN);
@@ -36,14 +39,35 @@ public class WebPageIndexer implements Indexer {
 
         // Remove common words from tokens
         List<String> tokensFilter = tokens.stream()
-                .filter(word -> !stopEn.contains(word) || !stopFr.contains(word))
+                .filter(word -> !stopEn.contains(word) && !stopFr.contains(word))
                 .collect(Collectors.toList());
 
-        // TODO: Creation of index (normal)
-        // For each document, store the words with its frequency
+        // Creation of index (normal)
+        // For each document, store the words with its frequency (number of occurrences)
+        Map<String, Long> frequencies = tokensFilter.stream().collect(Collectors.groupingBy(w -> w, counting()));
+        frequencies.forEach((k, v) -> System.out.println("s="+k + ": " + v));
+        index.index.put(metadata.getDocID(), frequencies);
 
-        // TODO: Creation of inverted Index
+        // Creation of inverted Index
         // Each word contains a list of id (documents) in which it appears (with its frequency)
+        tokensFilter.forEach(word -> {
+            if (!index.invertedIndex.containsKey(word)) {
+                index.invertedIndex.put(word, new HashMap<>());
+            }
+            if (!index.invertedIndex.get(word).containsKey(metadata.getDocID())) {
+                index.invertedIndex.get(word).put(metadata.getDocID(), 1);
+            }
+            else {
+                index.invertedIndex.get(word).put(metadata.getDocID(),
+                        index.invertedIndex.get(word).get(metadata.getDocID()) + 1);
+            }
+        });
+        index.invertedIndex.forEach((k, v) -> System.out.println(k + " -> " + v));
+        // TODO: probably a more elegant way to do this...
+        //tokensFilter.forEach(word -> {
+        //    index.invertedIndex.computeIfAbsent(word, k -> new HashMap<>()).add(metadata.getDocID(), )
+        //}
+        //});
     }
 
     @Override
