@@ -19,19 +19,19 @@ import static java.util.stream.Collectors.counting;
  */
 public class WebPageIndexer implements Indexer {
 
-    private WebPageSaver index;
+    private WebPageIndex index;
     // Path to stop words files
     private static final String PATH_STOP_WORD_EN = "common_words";
     private static final String PATH_STOP_WORD_FR = "common_words_fr";
 
     public WebPageIndexer() {
-        this.index = new WebPageSaver();
+        this.index = new WebPageIndex();
     }
 
     @Override
     public void index(Metadata metadata, String content) {
         // Tokenization on space and punctuation except apostrophes
-        List<String> tokens = Arrays.asList(content.split("\\W+"));
+        List<String> tokens = Arrays.asList(content.split("[^\\w']+"));
 
         // Load common words from both language (french and english)
         Set<String> stopEn = loadStopWordToSet(PATH_STOP_WORD_EN);
@@ -42,11 +42,25 @@ public class WebPageIndexer implements Indexer {
                 .filter(word -> !stopEn.contains(word) && !stopFr.contains(word))
                 .collect(Collectors.toList());
 
-        // Creation of index (normal)
+        // Add the docID with its corresponding url into the correspondence table
+        index.linkTable.put(metadata.getDocID(), metadata.getUrl().toString());
+
+        // Creation of index (standard)
         // For each document, store the words with its frequency (number of occurrences)
         Map<String, Long> frequencies = tokensFilter.stream().collect(Collectors.groupingBy(w -> w, counting()));
         frequencies.forEach((k, v) -> System.out.println("s="+k + ": " + v));
-        index.index.put(metadata.getDocID(), frequencies);
+
+        Map.Entry<String, Long> maxFreq = frequencies.entrySet().stream().max(Map.Entry.comparingByValue(Long::compareTo)).get();
+
+        frequencies.replaceAll((k, v) -> (k, v / maxFreq.getValue()));
+        //Map<String, Double> weightNorms = frequencies.stream().map((k, v) -> (k, v / maxFreq));
+        Map<String, Double> weightNorms = new HashMap<>();
+
+        for (Map.Entry<String, Long> entry: frequencies.entrySet()) {
+            weightNorms.put(entry.getKey(), entry.getValue() / maxFreq);
+        }
+
+        //index.index.put(metadata.getDocID(), frequencies);
 
         // Creation of inverted Index
         // Each word contains a list of id (documents) in which it appears (with its frequency)
