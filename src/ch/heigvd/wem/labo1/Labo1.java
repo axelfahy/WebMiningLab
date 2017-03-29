@@ -27,6 +27,7 @@ public class Labo1 {
     // CONFIGURATION
     public static final String START_URL = "http://iict.heig-vd.ch";
     public static final boolean DEBUG = true;
+    //private static final Mode mode = Mode.CRAWL;
     private static final Mode mode = Mode.RESTORE;
     private static final String indexSaveFileName = "iict.bin";
 
@@ -42,9 +43,16 @@ public class Labo1 {
                 break;
 
             case RESTORE:
-                //we load the index from disk
+                System.out.println("Restoring");
+                // We load the index from disk
                 index = loadIndex(indexSaveFileName);
-                index.invertedIndex.forEach((k, v) -> System.out.println(k + " -> " + v));
+                System.out.println(index.getLinkTable());
+                System.out.println(index.getIndex());
+                System.out.println(index.getInvertedIndex());
+                //index.index.forEach((k, v) -> {
+                //    System.out.println("----------" + k + "----------");
+                //});
+                //index.invertedIndex.forEach((k, v) -> System.out.println(k + " -> " + v));
                 break;
         }
 

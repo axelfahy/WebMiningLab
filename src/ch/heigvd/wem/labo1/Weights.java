@@ -11,7 +11,26 @@ public class Weights implements Serializable {
     private Double weightTfIdf;
 
     public Weights() {
+        // Nothing
+    }
 
+    public Weights(Long frequency) {
+        this.frequency = frequency;
+        this.weightNorm = 0.0;
+        this.weightTfIdf = 0.0;
+    }
+
+    public Weights(Long frequency, Double weightNorm) {
+        this.frequency = frequency;
+        this.weightNorm = weightNorm;
+        this.weightTfIdf = 0.0;
+    }
+
+
+    public Weights(Long frequency, Double weightNorm, Double weightTfIdf) {
+        this.frequency = frequency;
+        this.weightNorm = weightNorm;
+        this.weightTfIdf = weightTfIdf;
     }
 
     public Long getFrequency() {
@@ -37,4 +56,14 @@ public class Weights implements Serializable {
     public void setWeightTfIdf(Double weightTfIdf) {
         this.weightTfIdf = weightTfIdf;
     }
+
+    @Override
+    public String toString() {
+        return "Weights{" +
+                "frequency=" + frequency +
+                ", weightNorm=" + weightNorm +
+                ", weightTfIdf=" + weightTfIdf +
+                '}';
+    }
+
 }

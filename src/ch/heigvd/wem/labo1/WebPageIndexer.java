@@ -3,6 +3,7 @@ package ch.heigvd.wem.labo1;
 import ch.heigvd.wem.data.Metadata;
 import ch.heigvd.wem.interfaces.Index;
 import ch.heigvd.wem.interfaces.Indexer;
+import com.google.common.collect.Sets;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -43,49 +44,60 @@ public class WebPageIndexer implements Indexer {
                 .collect(Collectors.toList());
 
         // Add the docID with its corresponding url into the correspondence table
-        index.linkTable.put(metadata.getDocID(), metadata.getUrl().toString());
+        index.getLinkTable().put(metadata.getDocID(), metadata.getUrl().toString());
 
-        // Creation of index (standard)
         // For each document, store the words with its frequency (number of occurrences)
         Map<String, Long> frequencies = tokensFilter.stream().collect(Collectors.groupingBy(w -> w, counting()));
-        frequencies.forEach((k, v) -> System.out.println("s="+k + ": " + v));
 
+        // Get the maximal frequency (needed to calculate the weight by normalized frequency)
         Map.Entry<String, Long> maxFreq = frequencies.entrySet().stream().max(Map.Entry.comparingByValue(Long::compareTo)).get();
 
-        frequencies.replaceAll((k, v) -> (k, v / maxFreq.getValue()));
-        //Map<String, Double> weightNorms = frequencies.stream().map((k, v) -> (k, v / maxFreq));
-        Map<String, Double> weightNorms = new HashMap<>();
+        // Calculation of weight by normalized frequency (w(t_i) = freq_i / max_j(freq_i))
+        Map<String, Double> weightNorms = frequencies.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        e -> (e.getValue() / (double)maxFreq.getValue())));
 
-        for (Map.Entry<String, Long> entry: frequencies.entrySet()) {
-            weightNorms.put(entry.getKey(), entry.getValue() / maxFreq);
+        // Creation of Weights objects (storing the frequency, normalized weight
+        // and later the weight by td-idf normalized
+        Map<String, Weights> weights = new HashMap<>();
+        for(String key : Sets.union(weightNorms.keySet(), frequencies.keySet())) {
+            weights.put(key, new Weights(frequencies.get(key), weightNorms.get(key), 0.0));
         }
+        System.out.println(index.getLinkTable());
 
-        //index.index.put(metadata.getDocID(), frequencies);
+        // Creation of index (standard)
+        // Put the Weights object, with the calculated frequency, into the index
+        index.getIndex().put(metadata.getDocID(), weights);
+
+        System.out.println(index.getIndex());
 
         // Creation of inverted Index
         // Each word contains a list of id (documents) in which it appears (with its frequency)
-        tokensFilter.forEach(word -> {
-            if (!index.invertedIndex.containsKey(word)) {
-                index.invertedIndex.put(word, new HashMap<>());
-            }
-            if (!index.invertedIndex.get(word).containsKey(metadata.getDocID())) {
-                index.invertedIndex.get(word).put(metadata.getDocID(), 1);
-            }
-            else {
-                index.invertedIndex.get(word).put(metadata.getDocID(),
-                        index.invertedIndex.get(word).get(metadata.getDocID()) + 1);
-            }
-        });
-        index.invertedIndex.forEach((k, v) -> System.out.println(k + " -> " + v));
-        // TODO: probably a more elegant way to do this...
-        //tokensFilter.forEach(word -> {
-        //    index.invertedIndex.computeIfAbsent(word, k -> new HashMap<>()).add(metadata.getDocID(), )
-        //}
-        //});
+        weights.forEach(((word, weight) -> {
+            index.getInvertedIndex().computeIfAbsent(word, k -> new HashMap<>()).put(metadata.getDocID(), weight);
+        }));
+        System.out.println(index.getInvertedIndex());
     }
 
+    /**
+     * Finalize the indexation
+     *
+     * Calculation of weigths
+     */
     @Override
     public void finalizeIndexation() {
+        // Get the maximal frequency (needed to calculate the weight by normalized frequency)
+        //Map.Entry<String, Long> maxFreq = frequencies.entrySet().stream().max(Map.Entry.comparingByValue(Long::compareTo)).get();
+
+        //// Calculation of weight by normalized frequency (w(t_i) = freq_i / max_j(freq_i))
+        //Map<String, Double> weightNorms = frequencies.entrySet()
+        //        .stream()
+        //        .collect(Collectors.toMap(Map.Entry::getKey,
+        //                e -> (double) (e.getValue() / maxFreq.getValue())));
+
+        // Calculation of weight by tf-idf normalized
+
 
     }
 

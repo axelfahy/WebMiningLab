@@ -17,14 +17,34 @@ public abstract class Index implements Serializable {
 
     private static final long serialVersionUID = -7032327683456713025L;
 
-    // Index: Map<DocID, Map<Word, NbOccurrences>>
-    public Map<Long, Map<String, Weights>> index;
-    // InvertedIndex: Map<Word, Map<DocID, NbOccurrences>>
-    public Map<String, Map<Long, Weights>> invertedIndex;
-    // Index: Map<DocID, Map<Word, NormalizedFreq>>
-    //public Map<Long, Map<String, >> ponderation;
-    // InvertedIndex: Map<Word, Map<DocID, NbOccurrences>>
-    //public Map<String, Map<Long, Double>> invertedPonderation;
-    public Map<Long, String> linkTable;
+    // Index: Map<DocID, Map<Word, (NbOccurrences, Weights)>>
+    protected Map<Long, Map<String, Weights>> index;
+    // InvertedIndex: Map<Word, Map<DocID, (NbOccurrences, Weights)>>
+    protected Map<String, Map<Long, Weights>> invertedIndex;
+    // Correspondence table with id/pages
+    protected Map<Long, String> linkTable;
 
+    public Map<Long, Map<String, Weights>> getIndex() {
+        return index;
+    }
+
+    public void setIndex(Map<Long, Map<String, Weights>> index) {
+        this.index = index;
+    }
+
+    public Map<String, Map<Long, Weights>> getInvertedIndex() {
+        return invertedIndex;
+    }
+
+    public void setInvertedIndex(Map<String, Map<Long, Weights>> invertedIndex) {
+        this.invertedIndex = invertedIndex;
+    }
+
+    public Map<Long, String> getLinkTable() {
+        return linkTable;
+    }
+
+    public void setLinkTable(Map<Long, String> linkTable) {
+        this.linkTable = linkTable;
+    }
 }
