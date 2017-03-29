@@ -27,8 +27,8 @@ public class Labo1 {
     // CONFIGURATION
     public static final String START_URL = "http://iict.heig-vd.ch";
     public static final boolean DEBUG = true;
-    //private static final Mode mode = Mode.CRAWL;
-    private static final Mode mode = Mode.RESTORE;
+    private static final Mode mode = Mode.CRAWL;
+    //private static final Mode mode = Mode.RESTORE;
     private static final String indexSaveFileName = "iict.bin";
 
     public static void main(String[] args) {
@@ -37,22 +37,17 @@ public class Labo1 {
 
         switch (mode) {
             case CRAWL:
-                //we crawl and save the index to disk
+                // We crawl and save the index to disk
                 index = crawl();
                 saveIndex(indexSaveFileName, index);
                 break;
 
             case RESTORE:
-                System.out.println("Restoring");
                 // We load the index from disk
                 index = loadIndex(indexSaveFileName);
                 System.out.println(index.getLinkTable());
                 System.out.println(index.getIndex());
                 System.out.println(index.getInvertedIndex());
-                //index.index.forEach((k, v) -> {
-                //    System.out.println("----------" + k + "----------");
-                //});
-                //index.invertedIndex.forEach((k, v) -> System.out.println(k + " -> " + v));
                 break;
         }
 
@@ -82,20 +77,20 @@ public class Labo1 {
         Indexer indexer = new WebPageIndexer(); //TODO vous instancierez ici votre implémentation de l'indexer
         WebPageIndexerQueue queue = new WebPageIndexerQueue(indexer);
         queue.start();
-        //we set the indexerQueue reference to all the crawler threads
+        // We set the indexerQueue reference to all the crawler threads
         WebPageCrawler.setIndexerQueue(queue);
 
         try {
             CrawlController controller = new CrawlController(config, pageFetcher, robotstxtServer);
             controller.addSeed(START_URL);
-            controller.start(WebPageCrawler.class, 20); //this method keep the hand until the crawl is done
+            controller.start(WebPageCrawler.class, 20); // This method keep the hand until the crawl is done
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        queue.setAllDone(); //we notify the indexerQueue that it will not receive more data
+        queue.setAllDone(); // We notify the indexerQueue that it will not receive more data
         try {
-            queue.join(); //we wait for the indexerQueue to finish
+            queue.join(); // We wait for the indexerQueue to finish
         } catch (InterruptedException e) { /* NOTHING TO DO */ }
 
         //we return the created index

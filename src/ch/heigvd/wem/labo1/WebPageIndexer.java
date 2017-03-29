@@ -83,22 +83,46 @@ public class WebPageIndexer implements Indexer {
     /**
      * Finalize the indexation
      *
+     * We need to run two times over each word of a document.
+     * The first time to calculate the tf-idfs and get the maximal value.
+     * The second time to calculate the weight by tf-idf normalized.
+     *
      * Calculation of weigths
      */
     @Override
     public void finalizeIndexation() {
-        // Get the maximal frequency (needed to calculate the weight by normalized frequency)
-        //Map.Entry<String, Long> maxFreq = frequencies.entrySet().stream().max(Map.Entry.comparingByValue(Long::compareTo)).get();
-
-        //// Calculation of weight by normalized frequency (w(t_i) = freq_i / max_j(freq_i))
-        //Map<String, Double> weightNorms = frequencies.entrySet()
-        //        .stream()
-        //        .collect(Collectors.toMap(Map.Entry::getKey,
-        //                e -> (double) (e.getValue() / maxFreq.getValue())));
-
         // Calculation of weight by tf-idf normalized
-
-
+        int nbWebPages = index.getLinkTable().size();
+        Map<String, Double> weightsTfidf = new HashMap<>();
+        index.getIndex().forEach((doc, words) -> {
+            // Calculate the tf-idf for each word of the document
+            Map<String, Double> tfidfMap = new HashMap<>();
+            words.forEach((word, weights) -> {
+                int n = index.getInvertedIndex().get(word).size();
+                System.out.println("n" + " -> " + n);
+                System.out.println("f" + " -> " + Math.log(weights.getFrequency() + 1) / Math.log(2));
+                System.out.println("s" + " -> " + Math.log(nbWebPages / n));
+                double tfidf = Math.log(weights.getFrequency() + 1) / Math.log(2) *
+                        Math.log(nbWebPages / n) / Math.log(2);
+                System.out.println("tfidf" + " -> " + tfidf);
+                tfidfMap.put(word, tfidf);
+            });
+            System.out.println(tfidfMap);
+            // Get the maximal tf-idf
+            Map.Entry<String, Double> maxTfidf = tfidfMap.entrySet().stream().max(Map.Entry.comparingByValue(Double::compareTo)).get();
+            System.out.println(maxTfidf);
+            // Calculate the weight by tf-idf normalized
+            words.forEach((word, weights) -> {
+                double wTfidf = tfidfMap.get(word) / maxTfidf.getValue();
+                System.out.print("wtfidf" + " -> " + wTfidf + " / ");
+                // Update Weights in indexes
+                // Normal index
+                index.getIndex().get(doc).get(word).setWeightTfIdf(wTfidf);
+                index.getInvertedIndex().get(word).get(doc).setWeightTfIdf(wTfidf);
+            });
+            System.out.println(index.getIndex());
+            System.out.println(index.getInvertedIndex());
+        });
     }
 
     @Override
