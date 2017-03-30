@@ -87,7 +87,7 @@ public class WebPageIndexer implements Indexer {
      * The first time to calculate the tf-idfs and get the maximal value.
      * The second time to calculate the weight by tf-idf normalized.
      *
-     * Calculation of weigths
+     * Calculation of weights
      */
     @Override
     public void finalizeIndexation() {
