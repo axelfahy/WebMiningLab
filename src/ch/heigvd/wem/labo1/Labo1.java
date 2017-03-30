@@ -1,16 +1,14 @@
 package ch.heigvd.wem.labo1;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
+import java.util.Map;
+import java.util.Scanner;
 
 import ch.heigvd.wem.WebPageIndexerQueue;
 import ch.heigvd.wem.WebPageCrawler;
 import ch.heigvd.wem.interfaces.Index;
 import ch.heigvd.wem.interfaces.Indexer;
+import ch.heigvd.wem.interfaces.Retriever;
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;
@@ -27,11 +25,11 @@ public class Labo1 {
     // CONFIGURATION
     public static final String START_URL = "http://iict.heig-vd.ch";
     public static final boolean DEBUG = true;
-    private static final Mode mode = Mode.CRAWL;
-    //private static final Mode mode = Mode.RESTORE;
+    //private static final Mode mode = Mode.CRAWL;
+    private static final Mode mode = Mode.RESTORE;
     private static final String indexSaveFileName = "iict.bin";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Index index = null;
 
@@ -50,6 +48,53 @@ public class Labo1 {
                 System.out.println(index.getInvertedIndex());
                 break;
         }
+
+        WebPageRetriever retriever = new WebPageRetriever(index, Retriever.WeightingType.NORMALIZED_FREQUENCY);
+
+        Scanner in = new Scanner(System.in);
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String s;
+        int docID;
+        int choice = 0;
+
+        do {
+            System.out.println("=================================");
+            System.out.println("|         LABO 1 - MENU         |");
+            System.out.println("=================================");
+            System.out.println("| Options:                      |");
+            System.out.println("|        1. Search document     |");
+            System.out.println("|        2. Search term         |");
+            System.out.println("|        3. Execute query       |");
+            System.out.println("|        0. Exit                |");
+            System.out.println("=================================");
+
+            System.out.print("> ");
+            choice = in.nextInt();
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter a docID > ");
+                    docID = in.nextInt();
+                    Map<String, Double> res = retriever.searchDocument(docID);
+                    System.out.println(res);
+                    break;
+                case 2:
+                    System.out.print("Enter a term > ");
+                    s = br.readLine();
+                    System.out.println(retriever.searchTerm(s));
+                    break;
+                case 3:
+                    System.out.print("Enter a query > ");
+                    s = br.readLine();
+                    System.out.println(retriever.executeQuery(s));
+                    break;
+                case 0:
+                    System.out.println("Exiting program");
+                    break;
+                default:
+                    System.out.println("Invalid selection");
+                    break;
+            }
+        } while (choice != 0);
 
         //TODO recherche
 
