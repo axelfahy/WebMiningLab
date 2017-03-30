@@ -27,10 +27,10 @@ public abstract class Retriever {
      * Retrieves the terms contained in the given document. Each term is mapped to
      * its ponderation in the document.
      *
-     * @param docmentId a document identifier.
+     * @param documentId a document identifier.
      * @return the terms mapped to their frequency in the document.
      */
-    public abstract Map<String, Double> searchDocument(Integer docmentId);
+    public abstract Map<String, Double> searchDocument(Integer documentId);
 
     /**
      * Retrieves the documents containing the given term. Each document is mapped to

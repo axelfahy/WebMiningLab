@@ -13,12 +13,23 @@ public class WebPageRetriever extends Retriever {
     }
 
     @Override
-    public Map<String, Double> searchDocument(Integer docmentId) {
+    public Map<String, Double> searchDocument(Integer documentId) {
         Map<String, Double> results = new HashMap<>();
 
-        this.index.getIndex().get(docmentId).forEach((term, weight) -> {
-            results.put(term, (double)weight.getFrequency());
-        });
+        try {
+            if (this.weightingType == WeightingType.NORMALIZED_FREQUENCY) {
+                this.index.getIndex().get(new Long(documentId)).forEach((term, weight) -> {
+                    results.put(term, weight.getWeightNorm());
+                });
+            }
+            else if (this.weightingType == WeightingType.TF_IDF) {
+                this.index.getIndex().get(new Long(documentId)).forEach((term, weight) -> {
+                    results.put(term, weight.getWeightTfIdf());
+                });
+            }
+        } catch (NullPointerException e) {
+            System.out.println("No result");
+        }
         return results;
     }
 
@@ -26,9 +37,20 @@ public class WebPageRetriever extends Retriever {
     public Map<Long, Double> searchTerm(String term) {
         Map<Long, Double> results = new HashMap<>();
 
-        this.index.getInvertedIndex().get(term).forEach((doc, weight) -> {
-            results.put(doc, (double)weight.getFrequency());
-        });
+        try {
+            if (this.weightingType == WeightingType.NORMALIZED_FREQUENCY) {
+                this.index.getInvertedIndex().get(term).forEach((doc, weight) -> {
+                    results.put(doc, weight.getWeightNorm());
+                });
+            }
+            else if (this.weightingType == WeightingType.TF_IDF) {
+                this.index.getInvertedIndex().get(term).forEach((doc, weight) -> {
+                    results.put(doc, weight.getWeightTfIdf());
+                });
+            }
+        } catch (NullPointerException e) {
+            System.out.println("No result");
+        }
         return results;
     }
 
