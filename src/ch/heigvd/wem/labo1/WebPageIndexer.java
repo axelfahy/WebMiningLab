@@ -15,9 +15,11 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.counting;
 
-
 /**
+ * Class to index a website
  *
+ * An index contains a normal index and an inverted index.
+ * A link table is used to know which document is which web page.
  */
 public class WebPageIndexer implements Indexer {
 
