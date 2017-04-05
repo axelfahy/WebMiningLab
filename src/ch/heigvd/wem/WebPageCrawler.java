@@ -27,7 +27,7 @@ public class WebPageCrawler extends WebCrawler {
 
         String href = url.getURL().toLowerCase();
         return !FILTERS.matcher(href).matches()
-                && href.startsWith("http://www.ics.uci.edu/");
+                && href.startsWith(referringPage.getWebURL().toString());
     }
 
     @Override
