@@ -9,6 +9,7 @@ public class Utils {
      * Tokenization on space and punctuation except apostrophes
      *
      * If an apostrophe is at the end of a word, removes it.
+     * If it is in the middle of a word, keep it.
      *
      * @param s String to tokenize
      * @return List of tokens (String)
