@@ -3,6 +3,7 @@ package ch.heigvd.wem.labo1;
 import ch.heigvd.wem.data.Metadata;
 import ch.heigvd.wem.interfaces.Index;
 import ch.heigvd.wem.interfaces.Indexer;
+import ch.heigvd.wem.tools.Utils;
 import com.google.common.collect.Sets;
 
 import java.io.IOException;
@@ -32,7 +33,8 @@ public class WebPageIndexer implements Indexer {
     @Override
     public void index(Metadata metadata, String content) {
         // Tokenization on space and punctuation except apostrophes
-        List<String> tokens = Arrays.asList(content.split("[^\\w']+"));
+        //List<String> tokens = Arrays.asList(content.split("[^\\w']+"));
+        List<String> tokens = Utils.tokenize(content);
 
         // Load common words from both language (french and english)
         Set<String> stopEn = loadStopWordToSet(PATH_STOP_WORD_EN);
@@ -40,7 +42,8 @@ public class WebPageIndexer implements Indexer {
 
         // Remove common words from tokens
         List<String> tokensFilter = tokens.stream()
-                .filter(word -> !stopEn.contains(word) && !stopFr.contains(word))
+                .map(String::toLowerCase)
+                .filter(word -> !stopEn.contains(word.toLowerCase()) && !stopFr.contains(word.toLowerCase()))
                 .collect(Collectors.toList());
 
         // Add the docID with its corresponding url into the correspondence table
@@ -92,9 +95,12 @@ public class WebPageIndexer implements Indexer {
     @Override
     public void finalizeIndexation() {
         // Calculation of weight by tf-idf normalized
+        System.out.println(index.getLinkTable());
         int nbWebPages = index.getLinkTable().size();
+        System.out.println(nbWebPages);
         Map<String, Double> weightsTfidf = new HashMap<>();
         index.getIndex().forEach((doc, words) -> {
+            System.out.println("doc: " + doc);
             // Calculate the tf-idf for each word of the document
             Map<String, Double> tfidfMap = new HashMap<>();
             words.forEach((word, weights) -> {
@@ -122,6 +128,7 @@ public class WebPageIndexer implements Indexer {
             });
             System.out.println(index.getIndex());
             System.out.println(index.getInvertedIndex());
+            System.out.println(nbWebPages);
         });
     }
 
