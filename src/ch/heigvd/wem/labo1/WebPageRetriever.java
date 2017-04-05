@@ -5,6 +5,9 @@ import ch.heigvd.wem.interfaces.Retriever;
 import ch.heigvd.wem.tools.Utils;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.counting;
 
 public class WebPageRetriever extends Retriever {
 
@@ -12,82 +15,100 @@ public class WebPageRetriever extends Retriever {
         super(index, weightingType);
     }
 
+    /**
+     * Search a document in an index
+     *
+     * Depending on the WeightingType, either the normalized frequency
+     * or the tf-idf is returned
+     *
+     * @param documentId a document identifier.
+     * @return a map containing the term with its weight
+     */
     @Override
     public Map<String, Double> searchDocument(Integer documentId) {
         Map<String, Double> results = new HashMap<>();
 
         try {
-            if (this.weightingType == WeightingType.NORMALIZED_FREQUENCY) {
-                this.index.getIndex().get(new Long(documentId)).forEach((term, weight) -> {
-                    results.put(term, weight.getWeightNorm());
-                });
-            }
-            else if (this.weightingType == WeightingType.TF_IDF) {
-                this.index.getIndex().get(new Long(documentId)).forEach((term, weight) -> {
-                    results.put(term, weight.getWeightTfIdf());
-                });
-            }
+            this.index.getIndex().get(new Long(documentId)).forEach((term, weight) -> {
+                results.put(term, (this.weightingType == WeightingType.NORMALIZED_FREQUENCY) ?
+                        weight.getWeightNorm() : weight.getWeightTfIdf());
+            });
         } catch (NullPointerException e) {
             System.out.println("No result");
         }
         return results;
     }
 
+    /**
+     * Search a term in the index
+     *
+     * Depending on the WeightingType, either the normalized frequency
+     * or the tf-idf is returned
+     *
+     * @param term a term.
+     * @return a map containing the document and its weight
+     */
     @Override
     public Map<Long, Double> searchTerm(String term) {
         Map<Long, Double> results = new HashMap<>();
 
         try {
-            if (this.weightingType == WeightingType.NORMALIZED_FREQUENCY) {
-                this.index.getInvertedIndex().get(term).forEach((doc, weight) -> {
-                    results.put(doc, weight.getWeightNorm());
-                });
-            }
-            else if (this.weightingType == WeightingType.TF_IDF) {
-                this.index.getInvertedIndex().get(term).forEach((doc, weight) -> {
-                    results.put(doc, weight.getWeightTfIdf());
-                });
-            }
+            this.index.getInvertedIndex().get(term).forEach((doc, weight) -> {
+                results.put(doc, (this.weightingType == WeightingType.NORMALIZED_FREQUENCY) ?
+                        weight.getWeightNorm() : weight.getWeightTfIdf());
+            });
         } catch (NullPointerException e) {
             System.out.println("No result");
         }
         return results;
     }
 
+    /**
+     * Execute a query
+     *
+     * The map returned is not sorted by value, since it is not possible to sort a HashMap by its values,
+     * we would have to use another structure.
+     * However, the sort can be done when printing the results.
+     *
+     * @param query a string query, containing a list of words.
+     * @return a map containing the results with their corresponding scores
+     */
     @Override
     public Map<Long, Double> executeQuery(String query) {
         // Tokenization on space and punctuation except apostrophes
         List<String> tokens = Utils.tokenize(query);
 
+        // Set the token of the query to lowercase
+        List<String> tokensLower = tokens.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
+
         Map<Long, Double> scores = new HashMap<>();
         Map<Long, Double> lengthsDoc = new HashMap<>();
-        Double lengthsQuery = 0.0;
 
         // Calculate frequencies of terms from query
-        Map<String, Long> frequencies = new HashMap<>();
-        for (String token : tokens) {
-            if (!frequencies.containsKey(token))
-                frequencies.put(token, 0L);
+        Map<String, Long> frequencies = tokensLower.stream().collect(Collectors.groupingBy(w -> w, counting()));
+        // Calculate length of frequency
+        Double lengthsQuery = frequencies.values().stream().map(v -> Math.pow(v, 2)).mapToDouble(Number::doubleValue).sum();
 
-            frequencies.put(token, frequencies.get(token) + 1);
-            lengthsQuery += Math.pow(frequencies.get(token) ,2);
-        }
-
-        for (String token : tokens) {
+        for (String token : tokensLower) {
             Long freq = frequencies.get(token);
             Map<Long, Weights> postings = this.index.getInvertedIndex().get(token);
 
-            // Run over each document
-            for (Map.Entry<Long, Weights> entry : postings.entrySet()) {
-                // Calculate the score
-                if (!scores.containsKey(entry.getKey()))
-                    scores.put(entry.getKey(), 0.0);
-                scores.put(entry.getKey(), scores.get(entry.getKey()) + freq * entry.getValue().getFrequency());
+            // Check if term has any postings
+            if (postings != null) {
+                // Run over each document
+                for (Map.Entry<Long, Weights> entry : postings.entrySet()) {
+                    // Calculate the score
+                    if (!scores.containsKey(entry.getKey()))
+                        scores.put(entry.getKey(), 0.0);
+                    scores.put(entry.getKey(), scores.get(entry.getKey()) + freq * entry.getValue().getFrequency());
 
-                // Calculate the length
-                if (!lengthsDoc.containsKey(entry.getKey()))
-                    lengthsDoc.put(entry.getKey(), 0.0);
-                lengthsDoc.put(entry.getKey(), lengthsDoc.get(entry.getKey()) + Math.pow(entry.getValue().getFrequency(), 2));
+                    // Calculate the length
+                    if (!lengthsDoc.containsKey(entry.getKey()))
+                        lengthsDoc.put(entry.getKey(), 0.0);
+                    lengthsDoc.put(entry.getKey(), lengthsDoc.get(entry.getKey()) + Math.pow(entry.getValue().getFrequency(), 2));
+                }
             }
         }
         // Run over each document and calculate the length
@@ -111,20 +132,6 @@ public class WebPageRetriever extends Retriever {
             scores.put(entry.getKey(), entry.getValue() / lengthsDoc.get(entry.getKey()));
         }
 
-        Set<Map.Entry<Long, Double>> set = scores.entrySet();
-        List<Map.Entry<Long, Double>> list = new ArrayList<>(set);
-        Collections.sort(list, new Comparator<Map.Entry<Long, Double>>() {
-            public int compare(Map.Entry<Long, Double> o1,
-                    Map.Entry<Long, Double> o2) {
-                return o2.getValue().compareTo(o1.getValue());
-            }
-        });
-
-        Map<Long, Double> results = new HashMap<>();
-        for(Map.Entry<Long, Double> entry : list) {
-            results.put(entry.getKey(), entry.getValue());
-        }
-
-        return results;
+        return scores;
     }
 }
