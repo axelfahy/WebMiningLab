@@ -1,6 +1,7 @@
 package ch.heigvd.wem.labo1;
 
 import java.io.*;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -95,9 +96,6 @@ public class Labo1 {
                     break;
             }
         } while (choice != 0);
-
-        //TODO recherche
-
     }
 
     private static Index crawl() {
