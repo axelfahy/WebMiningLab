@@ -1,9 +1,7 @@
 package ch.heigvd.wem.labo1;
 
 import java.io.*;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 import ch.heigvd.wem.WebPageIndexerQueue;
 import ch.heigvd.wem.WebPageCrawler;
@@ -26,7 +24,6 @@ public class Labo1 {
     // CONFIGURATION
     public static final String START_URL = "http://iict.heig-vd.ch";
     public static final boolean DEBUG = true;
-    //private static final Mode mode = Mode.CRAWL;
     private static final Mode mode = Mode.RESTORE;
     private static final String indexSaveFileName = "iict.bin";
 
@@ -70,30 +67,41 @@ public class Labo1 {
             System.out.println("=================================");
 
             System.out.print("> ");
-            choice = in.nextInt();
-            switch (choice) {
-                case 1:
-                    System.out.print("Enter a docID > ");
-                    docID = in.nextInt();
-                    Map<String, Double> res = retriever.searchDocument(docID);
-                    System.out.println(res);
-                    break;
-                case 2:
-                    System.out.print("Enter a term > ");
-                    s = br.readLine();
-                    System.out.println(retriever.searchTerm(s));
-                    break;
-                case 3:
-                    System.out.print("Enter a query > ");
-                    s = br.readLine();
-                    System.out.println(retriever.executeQuery(s));
-                    break;
-                case 0:
-                    System.out.println("Exiting program");
-                    break;
-                default:
-                    System.out.println("Invalid selection");
-                    break;
+            // Check if there is an Integer to read
+            // avoid InputMismatchException if user does not enter an Integer
+            try {
+                choice = in.nextInt();
+                switch (choice) {
+                    case 1:
+                        System.out.print("Enter a docID > ");
+                        docID = in.nextInt();
+                        Map<String, Double> res = retriever.searchDocument(docID);
+                        System.out.println(res);
+                        break;
+                    case 2:
+                        System.out.print("Enter a term > ");
+                        s = br.readLine();
+                        System.out.println(retriever.searchTerm(s));
+                        break;
+                    case 3:
+                        System.out.print("Enter a query > ");
+                        s = br.readLine();
+                        Map<Long, Double> resQuery = retriever.executeQuery(s);
+                        // Sort the results to have the most relevant results at the top
+                        resQuery.entrySet().stream()
+                                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                                .forEach(System.out::println);
+                        break;
+                    case 0:
+                        System.out.println("Exiting program");
+                        break;
+                    default:
+                        System.out.println("Invalid selection");
+                        break;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Wrong input!");
+                choice = 0;
             }
         } while (choice != 0);
     }
@@ -117,7 +125,7 @@ public class Labo1 {
         RobotstxtServer robotstxtServer = new RobotstxtServer(robotsConfig, pageFetcher);
 
         // We create the indexer and the indexerQueue
-        Indexer indexer = new WebPageIndexer(); //TODO vous instancierez ici votre implémentation de l'indexer
+        Indexer indexer = new WebPageIndexer();
         WebPageIndexerQueue queue = new WebPageIndexerQueue(indexer);
         queue.start();
         // We set the indexerQueue reference to all the crawler threads
