@@ -2,6 +2,14 @@ package ch.heigvd.wem.labo1;
 
 import java.io.Serializable;
 
+/**
+ * Class Weights
+ *
+ * This class is used to contain the different values of an index.
+ * That is the frequency, the weight normalized and the weight by tf-idf.
+ *
+ * This class is used in order to save multiple values and avoiding the creation of multiple indexes.
+ */
 public class Weights implements Serializable {
 
     //private static final long serialVersionUID = -7032327683456713025L;
