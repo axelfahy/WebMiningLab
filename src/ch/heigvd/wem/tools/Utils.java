@@ -31,7 +31,7 @@ public class Utils {
      * @return List of tokens (String)
      */
     public static List<String> tokenize(String s) {
-        List<String> tokens = Arrays.asList(s.split("[^\\w']+"));
+        List<String> tokens = Arrays.asList(s.split("(?U)[^\\w']+"));
 
         // Remove apostrophe if at the end of a word
         for (int i = 0; i < tokens.size(); i++) {

@@ -2,6 +2,7 @@ package ch.heigvd.wem.labo1;
 
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import ch.heigvd.wem.WebPageIndexerQueue;
 import ch.heigvd.wem.WebPageCrawler;
@@ -24,7 +25,7 @@ public class Labo1 {
     // CONFIGURATION
     public static final String START_URL = "http://iict.heig-vd.ch";
     public static final boolean DEBUG = true;
-    private static final Mode mode = Mode.CRAWL;
+    private static final Mode mode = Mode.RESTORE;
     private static final String indexSaveFileName = "iict.bin";
 
     public static void main(String[] args) throws IOException {
@@ -60,6 +61,7 @@ public class Labo1 {
             System.out.println("|        1. Search document     |");
             System.out.println("|        2. Search term         |");
             System.out.println("|        3. Execute query       |");
+            System.out.println("|        4. Get URL from docID  |");
             System.out.println("|        0. Exit                |");
             System.out.println("=================================");
 
@@ -93,6 +95,11 @@ public class Labo1 {
                         else {
                             System.out.println("No result");
                         }
+                        break;
+                    case 4:
+                        System.out.print("Enter a docID > ");
+                        long id = in.nextLong();
+                        System.out.println(index.getLinkTable().get(id));
                         break;
                     case 0:
                         System.out.println("Exiting program");
