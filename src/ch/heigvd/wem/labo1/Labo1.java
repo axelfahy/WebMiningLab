@@ -24,7 +24,7 @@ public class Labo1 {
     // CONFIGURATION
     public static final String START_URL = "http://iict.heig-vd.ch";
     public static final boolean DEBUG = true;
-    private static final Mode mode = Mode.RESTORE;
+    private static final Mode mode = Mode.CRAWL;
     private static final String indexSaveFileName = "iict.bin";
 
     public static void main(String[] args) throws IOException {
@@ -41,9 +41,6 @@ public class Labo1 {
             case RESTORE:
                 // We load the index from disk
                 index = loadIndex(indexSaveFileName);
-                System.out.println(index.getLinkTable());
-                System.out.println(index.getIndex());
-                System.out.println(index.getInvertedIndex());
                 break;
         }
 
@@ -88,9 +85,14 @@ public class Labo1 {
                         s = br.readLine();
                         Map<Long, Double> resQuery = retriever.executeQuery(s);
                         // Sort the results to have the most relevant results at the top
-                        resQuery.entrySet().stream()
-                                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                                .forEach(System.out::println);
+                        if (!resQuery.isEmpty()) {
+                            resQuery.entrySet().stream()
+                                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                                    .forEach(System.out::println);
+                        }
+                        else {
+                            System.out.println("No result");
+                        }
                         break;
                     case 0:
                         System.out.println("Exiting program");

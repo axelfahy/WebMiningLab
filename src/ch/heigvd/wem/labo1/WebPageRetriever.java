@@ -70,6 +70,9 @@ public class WebPageRetriever extends Retriever {
      * we would have to use another structure.
      * However, the sort can be done when printing the results.
      *
+     * Preprocessing on tokens from the query is the same as the one done
+     * on the terms from the documents.
+     *
      * @param query a string query, containing a list of words.
      * @return a map containing the results with their corresponding scores
      */
@@ -78,20 +81,18 @@ public class WebPageRetriever extends Retriever {
         // Tokenization on space and punctuation except apostrophes
         List<String> tokens = Utils.tokenize(query);
 
-        // Set the token of the query to lowercase
-        List<String> tokensLower = tokens.stream()
-                .map(String::toLowerCase)
-                .collect(Collectors.toList());
+        // Remove stop words and set to lowercase
+        List<String> tokensFilter = Utils.removeStopWords(tokens);
 
         Map<Long, Double> scores = new HashMap<>();
         Map<Long, Double> lengthsDoc = new HashMap<>();
 
         // Calculate frequencies of terms from query
-        Map<String, Long> frequencies = tokensLower.stream().collect(Collectors.groupingBy(w -> w, counting()));
+        Map<String, Long> frequencies = tokensFilter.stream().collect(Collectors.groupingBy(w -> w, counting()));
         // Calculate length of frequency
         Double lengthsQuery = frequencies.values().stream().map(v -> Math.pow(v, 2)).mapToDouble(Number::doubleValue).sum();
 
-        for (String token : tokensLower) {
+        for (String token : tokensFilter) {
             Long freq = frequencies.get(token);
             Map<Long, Weights> postings = this.index.getInvertedIndex().get(token);
 
