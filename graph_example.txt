@@ -1,0 +1,9 @@
+# nodes
+a
+b
+c
+d
+# edges
+a;c
+c;a
+d;b
