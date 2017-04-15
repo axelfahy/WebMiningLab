@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * This class aims to read the content of a file containing an oriented graph. The
- * file must be in the folowing format :<br/>
+ * file must be in the following format :<br/>
  * <pre><code>
  * # nodes
  * node1
@@ -113,5 +113,14 @@ public class GraphFileReader {
      */
     public HashMap<String, Integer> getNodeMapping() {
         return map;
+    }
+
+    @Override
+    public String toString() {
+        String s = "AdjacencyMatrix: \n";
+        s += this.am.toString() + "\n";
+        s += "Map: \n";
+        s+= this.map.toString();
+        return s;
     }
 }
