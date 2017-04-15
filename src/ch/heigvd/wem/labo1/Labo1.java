@@ -109,22 +109,32 @@ public class Labo1 {
                         GraphFileReader graphReference = new GraphFileReader("graph_reference.txt");
                         System.out.println(graphReference);
 
-                        Vector<Double> input = new Vector<>();
+                        Vector<Double> inputMetrics = new Vector<>();
+                        Vector<Double> inputPr = new Vector<>();
                         // Initialization of value at 1
                         for (int i = 0; i < graphReference.getAdjacencyMatrix().size(); i++) {
-                            input.add(1.0);
+                            inputMetrics.add(1.0);
+                            inputPr.add(1.0 / graphReference.getAdjacencyMatrix().size());
                         }
 
                         System.out.println("Authority(1)");
-                        System.out.println(LinkAnalysis.calculateAc(graphReference.getAdjacencyMatrix(), input));
+                        System.out.println(LinkAnalysis.calculateAc(graphReference.getAdjacencyMatrix(), inputMetrics));
                         System.out.println("Hub(1)");
-                        System.out.println(LinkAnalysis.calculateHc(graphReference.getAdjacencyMatrix(), input));
+                        System.out.println(LinkAnalysis.calculateHc(graphReference.getAdjacencyMatrix(), inputMetrics));
+                        System.out.println("PageRank(1)");
+                        System.out.println(graphReference.getNodeMapping());
+                        System.out.println(LinkAnalysis.calculatePRc(graphReference.getAdjacencyMatrix(), inputPr));
 
-                        ArrayList<Vector<Double>> resReference = LinkAnalysis.calculateAcAndHubAtIterations(graphReference.getAdjacencyMatrix(), 5);
-                        System.out.println("Authority(5)");
-                        System.out.println(resReference.get(0));
-                        System.out.println("Hub(5)");
-                        System.out.println(resReference.get(1));
+                        //ArrayList<Vector<Double>> resReference = LinkAnalysis.calculateAcAndHubAtIterations(graphReference.getAdjacencyMatrix(), 5);
+                        //System.out.println("Authority(5)");
+                        //System.out.println(resReference.get(0));
+                        //System.out.println("Hub(5)");
+                        //System.out.println(resReference.get(1));
+                        //System.out.println("PageRank(5)");
+                        Vector<Double> prAtFive = LinkAnalysis.calculatePrAtIterations(graphReference.getAdjacencyMatrix(), 5);
+                        System.out.println(graphReference.getNodeMapping());
+                        System.out.println(prAtFive);
+
                         break;
                     case 0:
                         System.out.println("Exiting program");

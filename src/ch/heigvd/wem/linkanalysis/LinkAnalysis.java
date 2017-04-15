@@ -1,7 +1,5 @@
 package ch.heigvd.wem.linkanalysis;
 
-import sun.awt.image.ImageWatched;
-
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -95,18 +93,18 @@ public class LinkAnalysis {
     }
 
     /**
-     * Calculates the authority and hub metrics at a certains number of iterations
+     * Calculates the authority and hub metrics at a certain number of iterations
      *
      * @param m Adjacency matrix
      * @param nbIterations Number of iterations to used
-     * @return
+     * @return ArrayList containing the vector of authority(0) and the vector of hub(1)
      */
-    public static ArrayList<Vector<Double>> calculateAcAndHubAtIterations(AdjacencyMatrix m, Integer nbIterations) {
+    public static ArrayList<Vector<Double>> calculateAcAndHubAtIterations(AdjacencyMatrix m, int nbIterations) {
 
-        Vector<Double> auth= new Vector<>();
-        Vector<Double> nextAuth = new Vector<>();
-        Vector<Double> hub = new Vector<>();
-        Vector<Double> nextHub = new Vector<>();
+        Vector<Double> auth= new Vector<>(m.size());
+        Vector<Double> nextAuth = new Vector<>(m.size());
+        Vector<Double> hub = new Vector<>(m.size());
+        Vector<Double> nextHub = new Vector<>(m.size());
         ArrayList<Vector<Double>> result = new ArrayList<>();
 
         // Initialization of value at 1
@@ -144,11 +142,69 @@ public class LinkAnalysis {
      */
     public static Vector<Double> calculatePRc(AdjacencyMatrix m, Vector<Double> pr) {
 
-        Vector<Double> result = new Vector<Double>(m.size());
+        Vector<Double> result = new Vector<>(m.size());
 
-		/* A IMPLEMENTER */
+        // E = 0.15 / |V|
+        double e = 0.15 / m.size();
+
+        AdjacencyMatrix mTransition = m.getTransitionMatrix();
+
+        // Initialization of vectors
+        for (int i = 0; i < m.size(); i++) {
+            result.add(0.0);
+        }
+
+        // Value for normalization sum of Pr(Dj)
+        Double norm = 0.0;
+
+        for (int p = 0; p < mTransition.size(); p++) {
+            Double sum = 0.0;
+            // The transition matrix already gives a percentage
+            for (int q = 0; q < m.size(); q++) {
+                if (p != q) {
+                    sum += mTransition.get(q, p) * pr.get(p);
+                }
+            }
+            sum = 0.85 * sum + e;
+            norm += sum;
+            // Add the sum for the normalization
+            result.set(p, sum);
+        }
+
+        // Normalize each value of the vector
+        // Normalization is done by dividing the result by the total sum
+        for (int i = 0; i < m.size(); i++) {
+            result.set(i, result.get(i) / norm);
+        }
+        System.out.println("Norm=" + norm);
 
         return result;
     }
 
+    /**
+     * Calculates the page rank at a certain number of iterations
+     *
+     * @param m  Adjacency matrix.
+     * @param nbIterations Number of iterations to used
+     * @return Pagerank vector.
+     */
+    public static Vector<Double> calculatePrAtIterations(AdjacencyMatrix m, int nbIterations) {
+        Vector<Double> pr = new Vector<>(m.size());
+        Vector<Double> nextPr = new Vector<>(m.size());
+
+        // Initialization of value at 1
+        for (int i = 0; i < m.size(); i++) {
+            pr.add(1.0 / m.size());
+            nextPr.add(1.0 / m.size());
+        }
+
+        for (int i = 0; i < nbIterations; i++) {
+            System.out.println("Iteration=" + i);
+            // Calculate the next page rang using the current one
+            nextPr = LinkAnalysis.calculatePRc(m, pr);
+            System.out.println(nextPr);
+            pr = nextPr;
+        }
+        return pr;
+    }
 }
