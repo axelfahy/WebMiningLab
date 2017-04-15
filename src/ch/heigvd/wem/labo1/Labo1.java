@@ -9,6 +9,8 @@ import ch.heigvd.wem.WebPageCrawler;
 import ch.heigvd.wem.interfaces.Index;
 import ch.heigvd.wem.interfaces.Indexer;
 import ch.heigvd.wem.interfaces.Retriever;
+import ch.heigvd.wem.linkanalysis.GraphFileReader;
+import ch.heigvd.wem.linkanalysis.LinkAnalysis;
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;
@@ -54,16 +56,18 @@ public class Labo1 {
         int choice = 0;
 
         do {
-            System.out.println("=================================");
-            System.out.println("|         LABO 1 - MENU         |");
-            System.out.println("=================================");
-            System.out.println("| Options:                      |");
-            System.out.println("|        1. Search document     |");
-            System.out.println("|        2. Search term         |");
-            System.out.println("|        3. Execute query       |");
-            System.out.println("|        4. Get URL from docID  |");
-            System.out.println("|        0. Exit                |");
-            System.out.println("=================================");
+            System.out.println("===================================");
+            System.out.println("|         LABO 1 - MENU           |");
+            System.out.println("===================================");
+            System.out.println("| Options:                        |");
+            System.out.println("|        1. Search document       |");
+            System.out.println("|        2. Search term           |");
+            System.out.println("|        3. Execute query         |");
+            System.out.println("|        4. Get URL from docID    |");
+            System.out.println("|        5. Hyperlinks analysis   |");
+            System.out.println("|           (graph_example.txt)   |");
+            System.out.println("|        0. Exit                  |");
+            System.out.println("===================================");
 
             System.out.print("> ");
             // Check if there is an Integer to read
@@ -100,6 +104,27 @@ public class Labo1 {
                         System.out.print("Enter a docID > ");
                         long id = in.nextLong();
                         System.out.println(index.getLinkTable().get(id));
+                        break;
+                    case 5:
+                        GraphFileReader graphReference = new GraphFileReader("graph_reference.txt");
+                        System.out.println(graphReference);
+
+                        Vector<Double> input = new Vector<>();
+                        // Initialization of value at 1
+                        for (int i = 0; i < graphReference.getAdjacencyMatrix().size(); i++) {
+                            input.add(1.0);
+                        }
+
+                        System.out.println("Authority(1)");
+                        System.out.println(LinkAnalysis.calculateAc(graphReference.getAdjacencyMatrix(), input));
+                        System.out.println("Hub(1)");
+                        System.out.println(LinkAnalysis.calculateHc(graphReference.getAdjacencyMatrix(), input));
+
+                        ArrayList<Vector<Double>> resReference = LinkAnalysis.calculateAcAndHubAtIterations(graphReference.getAdjacencyMatrix(), 5);
+                        System.out.println("Authority(5)");
+                        System.out.println(resReference.get(0));
+                        System.out.println("Hub(5)");
+                        System.out.println(resReference.get(1));
                         break;
                     case 0:
                         System.out.println("Exiting program");
