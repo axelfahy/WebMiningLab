@@ -1,6 +1,7 @@
 package ch.heigvd.wem.labo1;
 
 import ch.heigvd.wem.data.Metadata;
+import ch.heigvd.wem.data.VisitedPage;
 import ch.heigvd.wem.interfaces.Index;
 import ch.heigvd.wem.interfaces.Indexer;
 import ch.heigvd.wem.tools.Utils;
@@ -63,6 +64,12 @@ public class WebPageIndexer implements Indexer {
         weights.forEach(((word, weight) -> {
             index.getInvertedIndex().computeIfAbsent(word, k -> new HashMap<>()).put(metadata.getDocID(), weight);
         }));
+
+        // Saves the metadata of a page
+        index.getMetadataTable().put(metadata.getDocID(), new VisitedPage(metadata, content));
+
+        // Saves the url of a page
+        index.getUrlTable().put(metadata.getUrl(), metadata.getDocID());
     }
 
     /**

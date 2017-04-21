@@ -1,6 +1,8 @@
 package ch.heigvd.wem.data;
 
-public class VisitedPage {
+import java.io.Serializable;
+
+public class VisitedPage implements Serializable {
 
     private Metadata metadata = null;
     private String content = null;

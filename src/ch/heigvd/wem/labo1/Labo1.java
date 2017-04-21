@@ -10,6 +10,7 @@ import ch.heigvd.wem.interfaces.Index;
 import ch.heigvd.wem.interfaces.Indexer;
 import ch.heigvd.wem.interfaces.Retriever;
 import ch.heigvd.wem.linkanalysis.GraphFileReader;
+import ch.heigvd.wem.linkanalysis.GraphIndexReader;
 import ch.heigvd.wem.linkanalysis.LinkAnalysis;
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
@@ -27,7 +28,7 @@ public class Labo1 {
     // CONFIGURATION
     public static final String START_URL = "http://iict.heig-vd.ch";
     public static final boolean DEBUG = true;
-    private static final Mode mode = Mode.RESTORE;
+    private static final Mode mode = Mode.CRAWL;
     private static final String indexSaveFileName = "iict.bin";
 
     public static void main(String[] args) throws IOException {
@@ -47,7 +48,8 @@ public class Labo1 {
                 break;
         }
 
-        WebPageRetriever retriever = new WebPageRetriever(index, Retriever.WeightingType.NORMALIZED_FREQUENCY);
+        WebPageRetriever retriever = new WebPageRetriever(index, Retriever.WeightingType.TF_IDF);
+
 
         Scanner in = new Scanner(System.in);
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -66,6 +68,8 @@ public class Labo1 {
             System.out.println("|        4. Get URL from docID    |");
             System.out.println("|        5. Hyperlinks analysis   |");
             System.out.println("|           (graph_example.txt)   |");
+            System.out.println("|        6. Hyperlinks analysis   |");
+            System.out.println("|           (from index)          |");
             System.out.println("|        0. Exit                  |");
             System.out.println("===================================");
 
@@ -134,6 +138,37 @@ public class Labo1 {
                         Vector<Double> prAtFive = LinkAnalysis.calculatePrAtIterations(graphReference.getAdjacencyMatrix(), 5);
                         System.out.println(graphReference.getNodeMapping());
                         System.out.println(prAtFive);
+
+                        break;
+                    case 6:
+                        GraphIndexReader graphIndexReader = new GraphIndexReader(index);
+                        System.out.println(graphIndexReader);
+
+                        Vector<Double> inputMetrics2 = new Vector<>();
+                        Vector<Double> inputPr2 = new Vector<>();
+                        // Initialization of value at 1
+                        for (int i = 0; i < graphIndexReader.getAdjacencyMatrix().size(); i++) {
+                            inputMetrics2.add(1.0);
+                            inputPr2.add(1.0 / graphIndexReader.getAdjacencyMatrix().size());
+                        }
+
+                        System.out.println("Authority(1)");
+                        System.out.println(LinkAnalysis.calculateAc(graphIndexReader.getAdjacencyMatrix(), inputMetrics2));
+                        System.out.println("Hub(1)");
+                        System.out.println(LinkAnalysis.calculateHc(graphIndexReader.getAdjacencyMatrix(), inputMetrics2));
+                        System.out.println("PageRank(1)");
+                        System.out.println(graphIndexReader.getNodeMapping());
+                        System.out.println(LinkAnalysis.calculatePRc(graphIndexReader.getAdjacencyMatrix(), inputPr2));
+
+                        //ArrayList<Vector<Double>> resReference = LinkAnalysis.calculateAcAndHubAtIterations(graphIndexReader.getAdjacencyMatrix(), 5);
+                        //System.out.println("Authority(5)");
+                        //System.out.println(resReference.get(0));
+                        //System.out.println("Hub(5)");
+                        //System.out.println(resReference.get(1));
+                        //System.out.println("PageRank(5)");
+                        Vector<Double> prAtFive2 = LinkAnalysis.calculatePrAtIterations(graphIndexReader.getAdjacencyMatrix(), 5);
+                        System.out.println(graphIndexReader.getNodeMapping());
+                        System.out.println(prAtFive2);
 
                         break;
                     case 0:

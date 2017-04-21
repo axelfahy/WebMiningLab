@@ -10,6 +10,8 @@ public class WebPageIndex extends Index {
         this.index = new HashMap<>();
         this.invertedIndex = new HashMap<>();
         this.linkTable = new HashMap<>();
+        this.metadataTable = new HashMap<>();
+        this.urlTable = new HashMap<>();
     }
 
 }

@@ -1,6 +1,9 @@
 package ch.heigvd.wem.interfaces;
 
+import ch.heigvd.wem.data.Metadata;
+import ch.heigvd.wem.data.VisitedPage;
 import ch.heigvd.wem.labo1.Weights;
+import edu.uci.ics.crawler4j.url.WebURL;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -26,6 +29,12 @@ public abstract class Index implements Serializable {
     // Correspondence table with id/pages
     protected Map<Long, String> linkTable;
 
+    // Correspondence table with docid/metadata
+    protected Map<Long, VisitedPage> metadataTable;
+
+    // Correspondence table with url/docid
+    protected Map<WebURL, Long> urlTable;
+
     public Map<Long, Map<String, Weights>> getIndex() {
         return index;
     }
@@ -48,5 +57,21 @@ public abstract class Index implements Serializable {
 
     public void setLinkTable(Map<Long, String> linkTable) {
         this.linkTable = linkTable;
+    }
+
+    public Map<Long, VisitedPage> getMetadataTable() {
+        return metadataTable;
+    }
+
+    public void setMetadataTable(Map<Long, VisitedPage> metadataTable) {
+        this.metadataTable = metadataTable;
+    }
+
+    public Map<WebURL, Long> getUrlTable() {
+        return urlTable;
+    }
+
+    public void setUrlTable(Map<WebURL, Long> urlTable) {
+        this.urlTable = urlTable;
     }
 }
