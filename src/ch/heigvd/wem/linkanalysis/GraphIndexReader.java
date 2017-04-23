@@ -55,19 +55,22 @@ public class GraphIndexReader {
         for (Map.Entry<Long, VisitedPage> entry : index.getMetadataTable().entrySet()) {
             for (WebURL url : entry.getValue().getMetadata().getLinks()) {
 
-                currentPage = index.getMetadataTable().get(index.getUrlTable().get(url));
+                try {
+                    currentPage = index.getMetadataTable().get(index.getUrlTable().get(url));
 
-                // TODO NullPointerException after the getContent() method is called, currentPage is null ?
-                currentHash = Tools.hash(currentPage.getContent());
+                    currentHash = Tools.hash(currentPage.getContent());
 
-                // Check if we already visited this page or not (through another URL)
-                if (!checkedPages.containsKey(currentHash)) {
-                    checkedPages.put(currentHash, currentPage.getMetadata().getDocID());
+                    // Check if we already visited this page or not (through another URL)
+                    if (!checkedPages.containsKey(currentHash)) {
+                        checkedPages.put(currentHash, currentPage.getMetadata().getDocID());
 
-                    if (!edges.containsKey(currentPage.getMetadata().getDocID()))
-                        edges.put(currentPage.getMetadata().getDocID(), new LinkedList<>());
+                        if (!edges.containsKey(currentPage.getMetadata().getDocID()))
+                            edges.put(currentPage.getMetadata().getDocID(), new LinkedList<>());
 
-                    edges.get(currentPage.getMetadata().getDocID()).add(entry.getKey());
+                        edges.get(currentPage.getMetadata().getDocID()).add(entry.getKey());
+                    }
+                } catch (NullPointerException e) {
+                    System.out.println("URL unknown : " + url.toString());
                 }
             }
         }
