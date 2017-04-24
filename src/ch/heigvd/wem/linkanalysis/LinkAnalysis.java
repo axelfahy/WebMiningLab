@@ -50,9 +50,6 @@ public class LinkAnalysis {
     private static Vector<Double> calculateMetrics(AdjacencyMatrix m, Vector<Double> c, int metric) {
         // The result vector contains the Ac or Hc value for each page Di
         Vector<Double> result = new Vector<>(m.size());
-        for (int i = 0; i < m.size(); i++) {
-            result.add(i, 0.0);
-        }
 
         // Value for normalization sqrt of sum of square of each values
         Double norm = 0.0;
@@ -80,7 +77,7 @@ public class LinkAnalysis {
             }
             // Calculate the value for the normalization
             norm += sum * sum;
-            result.set(p, sum);
+            result.add(sum);
         }
         norm = Math.sqrt(norm);
 
@@ -149,11 +146,6 @@ public class LinkAnalysis {
 
         AdjacencyMatrix mTransition = m.getTransitionMatrix();
 
-        // Initialization of vectors
-        for (int i = 0; i < m.size(); i++) {
-            result.add(0.0);
-        }
-
         // Value for normalization sum of Pr(Dj)
         Double norm = 0.0;
 
@@ -162,13 +154,14 @@ public class LinkAnalysis {
             // The transition matrix already gives a percentage
             for (int q = 0; q < m.size(); q++) {
                 if (p != q) {
-                    sum += mTransition.get(q, p) * pr.get(p);
+                    // Get(q, p) because we need to transposed value
+                    sum += mTransition.get(q, p) * pr.get(q);
                 }
             }
             sum = 0.85 * sum + e;
             norm += sum;
             // Add the sum for the normalization
-            result.set(p, sum);
+            result.add(sum);
         }
 
         // Normalize each value of the vector
@@ -176,7 +169,6 @@ public class LinkAnalysis {
         for (int i = 0; i < m.size(); i++) {
             result.set(i, result.get(i) / norm);
         }
-        System.out.println("Norm=" + norm);
 
         return result;
     }
@@ -199,10 +191,8 @@ public class LinkAnalysis {
         }
 
         for (int i = 0; i < nbIterations; i++) {
-            System.out.println("Iteration=" + i);
             // Calculate the next page rang using the current one
             nextPr = LinkAnalysis.calculatePRc(m, pr);
-            System.out.println(nextPr);
             pr = nextPr;
         }
         return pr;
