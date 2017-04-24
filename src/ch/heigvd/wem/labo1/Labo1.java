@@ -67,9 +67,11 @@ public class Labo1 {
             System.out.println("|        3. Execute query         |");
             System.out.println("|        4. Get URL from docID    |");
             System.out.println("|        5. Hyperlinks analysis   |");
-            System.out.println("|           (graph_example.txt)   |");
+            System.out.println("|           (graph_reference.txt) |");
             System.out.println("|        6. Hyperlinks analysis   |");
             System.out.println("|           (from index)          |");
+            System.out.println("|        7. Execute query         |");
+            System.out.println("|           (with hyperlinks)     |");
             System.out.println("|        0. Exit                  |");
             System.out.println("===================================");
 
@@ -126,17 +128,17 @@ public class Labo1 {
                         System.out.println("Hub(1)");
                         System.out.println(LinkAnalysis.calculateHc(graphReference.getAdjacencyMatrix(), inputMetrics));
                         System.out.println("PageRank(1)");
-                        System.out.println(graphReference.getNodeMapping());
+                        System.out.println("Mapping: " + graphReference.getNodeMapping());
                         System.out.println(LinkAnalysis.calculatePRc(graphReference.getAdjacencyMatrix(), inputPr));
 
-                        //ArrayList<Vector<Double>> resReference = LinkAnalysis.calculateAcAndHubAtIterations(graphReference.getAdjacencyMatrix(), 5);
-                        //System.out.println("Authority(5)");
-                        //System.out.println(resReference.get(0));
-                        //System.out.println("Hub(5)");
-                        //System.out.println(resReference.get(1));
-                        //System.out.println("PageRank(5)");
+                        ArrayList<Vector<Double>> resReference = LinkAnalysis.calculateAcAndHubAtIterations(graphReference.getAdjacencyMatrix(), 5);
+                        System.out.println("Authority(5)");
+                        System.out.println(resReference.get(0));
+                        System.out.println("Hub(5)");
+                        System.out.println(resReference.get(1));
+                        System.out.println("PageRank(5)");
                         Vector<Double> prAtFive = LinkAnalysis.calculatePrAtIterations(graphReference.getAdjacencyMatrix(), 5);
-                        System.out.println(graphReference.getNodeMapping());
+                        System.out.println("Mapping: " + graphReference.getNodeMapping());
                         System.out.println(prAtFive);
 
                         break;
@@ -157,19 +159,37 @@ public class Labo1 {
                         System.out.println("Hub(1)");
                         System.out.println(LinkAnalysis.calculateHc(graphIndexReader.getAdjacencyMatrix(), inputMetrics2));
                         System.out.println("PageRank(1)");
-                        System.out.println(graphIndexReader.getNodeMapping());
+                        System.out.println("Mapping: " + graphIndexReader.getNodeMapping());
                         System.out.println(LinkAnalysis.calculatePRc(graphIndexReader.getAdjacencyMatrix(), inputPr2));
 
-                        //ArrayList<Vector<Double>> resReference = LinkAnalysis.calculateAcAndHubAtIterations(graphIndexReader.getAdjacencyMatrix(), 5);
-                        //System.out.println("Authority(5)");
-                        //System.out.println(resReference.get(0));
-                        //System.out.println("Hub(5)");
-                        //System.out.println(resReference.get(1));
-                        //System.out.println("PageRank(5)");
+                        ArrayList<Vector<Double>> resReference2 = LinkAnalysis.calculateAcAndHubAtIterations(graphIndexReader.getAdjacencyMatrix(), 5);
+                        System.out.println("Authority(5)");
+                        System.out.println(resReference2.get(0));
+                        System.out.println("Hub(5)");
+                        System.out.println(resReference2.get(1));
+                        System.out.println("PageRank(5)");
                         Vector<Double> prAtFive2 = LinkAnalysis.calculatePrAtIterations(graphIndexReader.getAdjacencyMatrix(), 5);
-                        System.out.println(graphIndexReader.getNodeMapping());
+                        System.out.println("Mapping: " + graphIndexReader.getNodeMapping());
                         System.out.println(prAtFive2);
 
+                        break;
+                    case 7:
+                        System.out.print("Enter a query > ");
+                        s = br.readLine();
+                        GraphIndexReader graphIndexReaderQuery = new GraphIndexReader(index);
+                        Map<Long, Double> resQuery2 = retriever.executeQuery(s);
+                        Vector<Double> prAtFive3 = LinkAnalysis.calculatePrAtIterations(graphIndexReaderQuery.getAdjacencyMatrix(), 5);
+                        // Sort the results to have the most relevant results at the top
+                        if (!resQuery2.isEmpty()) {
+                            // Multiplication of TF-IDF by the Page Rank
+                            resQuery2.replaceAll((k, v) -> v * prAtFive3.get(graphIndexReaderQuery.getNodeMapping().get(k)));
+                            resQuery2.entrySet().stream()
+                                    .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                                    .forEach(System.out::println);
+                        }
+                        else {
+                            System.out.println("No result");
+                        }
                         break;
                     case 0:
                         System.out.println("Exiting program");
