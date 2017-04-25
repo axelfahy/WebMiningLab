@@ -12,18 +12,8 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * This class aims to read the content of a file containing an oriented graph. The
- * file must be in the following format :<br/>
- * <pre><code>
- * # nodes
- * node1
- * node2
- * node3
- * # edges (from;to)
- * node1;node3
- * node2;node3
- * mode3;node1
- * </code></pre>
+ * This class aims to create an oriented graph based on an index
+ * previously created by a crawler. <br/>
  *
  * @author Florian Poulin <i>(florian.poulin at heig-vd.ch)</i>
  */
@@ -33,7 +23,7 @@ public class GraphIndexReader {
     private LinkedHashMap<Long, Integer> map;
 
     /**
-     * Constructor. Parses the file with the given name.
+     * Constructor. Parses the index
      *
      * @param index Index to parse to create the graph
      *                 class comments.
@@ -42,7 +32,7 @@ public class GraphIndexReader {
 
         // Init structures for storing information
         List<Long> nodes = new LinkedList<>();
-        HashMap<Long, LinkedList<Long>> edges = new HashMap<>();
+        Map<Long, LinkedList<Long>> edges = new HashMap<>();
 
         Map<String, Long> checkedPages = new HashMap<>();
 
@@ -58,47 +48,28 @@ public class GraphIndexReader {
                 try {
                     currentPage = index.getMetadataTable().get(index.getUrlTable().get(url));
 
+                    // Hash the content of the page to prevent analyzing multiple times the same page
                     currentHash = Tools.hash(currentPage.getContent());
 
                     // Check if we already visited this page or not (through another URL)
                     if (!checkedPages.containsKey(currentHash)) {
                         checkedPages.put(currentHash, currentPage.getMetadata().getDocID());
 
+                        // Create a new edges entry in the map
                         if (!edges.containsKey(currentPage.getMetadata().getDocID()))
                             edges.put(currentPage.getMetadata().getDocID(), new LinkedList<>());
 
+                        // Add the link between two URLs in the edge map
                         edges.get(currentPage.getMetadata().getDocID()).add(entry.getKey());
                     }
-                } catch (NullPointerException e) {
+                }
+
+                // If an URL is not known by the index, an exception is thrown
+                catch (NullPointerException e) {
                     System.out.println("URL unknown : " + url.toString());
                 }
             }
         }
-
-//        // Read content
-//        String line;
-//        try {
-//
-//            // Read first line
-//            br.readLine();
-//
-//            // Read nodes (until #)
-//            while (!(line = br.readLine()).startsWith("#"))
-//                nodes.add(line);
-//
-//            // Read edges (until EOF)
-//            while ((line = br.readLine()) != null) {
-//
-//                String[] tmp = line.split(";");
-//                LinkedList<String> list;
-//                if ((list = edges.get(tmp[0])) == null) {
-//                    list = new LinkedList<String>();
-//                    edges.put(tmp[0], list);
-//                }
-//                list.add(tmp[1]);
-//            }
-//            br.close();
-
 
         // Init members
         am = new ArrayListMatrix(nodes.size());
